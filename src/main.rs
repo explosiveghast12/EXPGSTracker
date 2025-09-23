@@ -10,13 +10,13 @@ const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
 
 struct Sample {
     audio: [i8; SAMPLE_LENGTH as usize], //This seems really hacky, I hope it doesn't cause problems
-    pitch: i32,
+    pitch: i8,
     reverse: bool
 }
 
 struct Note
 {
-    pitch: i32,
+    pitch: i8, // We only need 255 notes, unless we start doing weird stuff
     sample: Sample
 }
 
@@ -28,8 +28,8 @@ fn main() -> io::Result<()> {
     let stdin = io::stdin(); // We get `Stdin` here.
     loop {
         stdin.read_line(&mut buffer)?; // Oh no, how can we clean the input?
-        buffer.pop(); // This is how.
-        if &buffer == "quit" // Okay, I have dereferenced the buffer since I wan't to compare the data, not the pointer.
+        // I was trying to use pop, but that didn't work, using trim does
+        if buffer.trim() == "quit" // Okay, I have dereferenced the buffer since I wan't to compare the data, not the pointer.
         {
             break;
         }
