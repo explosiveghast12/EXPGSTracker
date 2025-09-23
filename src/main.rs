@@ -1,6 +1,7 @@
 use std::io;
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
+// I have been working on this for ~30min 2:00pm 9/23/2025, add to time card
 
 const SAMPLE_BITRATE: i32 = 22 * 1024;
 const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
@@ -13,39 +14,49 @@ struct Sample {
     reverse: bool
 }
 
-fn main() -> io::Result<()>
+struct Note
 {
+    pitch: i32,
+    sample: Sample
+}
+
+// Figure out vectors
+// Read this: https://doc.rust-lang.org/std/time/index.html
+
+fn main() -> io::Result<()> {
     let mut buffer = String::new();
-    let stdin = io::stdin();
-    //This is a terminal program, I will make a GUI later, if this is too cumbersome at least
-    //So, get user input:
+    let stdin = io::stdin(); // We get `Stdin` here.
     loop {
-        print!(">");
-        stdin.read_line(&mut buffer)?;
-        //Comparing input the lazy way, until I figure out some better interface
-        // Add samples
-        if buffer == "1"
+        stdin.read_line(&mut buffer)?; // Oh no, how can we clean the input?
+        buffer.pop(); // This is how.
+        if &buffer == "quit" // Okay, I have dereferenced the buffer since I wan't to compare the data, not the pointer.
         {
-            say_hi();
+            break;
         }
-        // Edit samples
-        if buffer == "2"
-        {
-            say_hi();
-        }
-        // Sequence samples
-        if buffer == "3"
-        {
-            say_hi();
-        }
-        if buffer == "exit"
-        {
-            say_hi(); //Should we return something to the OS? Who knows.
-        }
+        println!("{}", buffer);
+        buffer.clear();
     }
+    Ok(()) // This is a weird thing, I don't really understand it. LOOK IT UP.
 }
 
 fn say_hi()
 {
     println!("hi");
+}
+
+fn sequence_loop()
+{
+    // Add/record notes into vector
+    // Allow playback
+}
+
+fn load_sample()
+{
+    // Load wavy files into memory
+}
+
+fn edit_samples()
+{
+    // Do digital signal processing to the samples loaded into memory
+    // Make an undo function if you care about usability
 }
