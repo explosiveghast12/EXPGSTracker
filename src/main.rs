@@ -2,6 +2,7 @@ use std::io;
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
 // I have been working on this for ~30min 2:00pm 9/23/2025, add to time card
+// Have a current sample selected, presets, and other fancy stuff
 
 const SAMPLE_BITRATE: i32 = 22 * 1024;
 const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
@@ -29,14 +30,36 @@ fn main() -> io::Result<()> {
     loop {
         stdin.read_line(&mut buffer)?; // Oh no, how can we clean the input?
         // I was trying to use pop, but that didn't work, using trim does
+        // We could likely trim once if we cared, but this program is lightweight alrady, I'll fix it later.
         if buffer.trim() == "quit" // Okay, I have dereferenced the buffer since I wan't to compare the data, not the pointer.
         {
             break;
+        }
+        else if buffer.trim() == "help"
+        {
+            help();
+        }
+        else if buffer.trim() == "load"
+        {
+            load();
+        }
+        else if buffer.trim() == "sequence"
+        {
+            sequence_loop();
+        }
+        else if buffer.trim() == "samples"
+        {
+            edit_samples();
         }
         println!("{}", buffer);
         buffer.clear();
     }
     Ok(()) // This is a weird thing, I don't really understand it. LOOK IT UP.
+}
+
+fn help()
+{
+    println!("1. quit\n2. load\n3. sequence\n4. samples");
 }
 
 fn say_hi()
@@ -50,9 +73,10 @@ fn sequence_loop()
     // Allow playback
 }
 
-fn load_sample()
+fn load()
 {
     // Load wavy files into memory
+    // Or projects depending on file extension
 }
 
 fn edit_samples()
