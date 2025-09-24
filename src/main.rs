@@ -30,6 +30,10 @@ const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
 // So where should I put this? I could make a class, but I want to do functional programming
 // I guess I should put this in the main function, and then pass it into my other functions
 
+static mut PROJECT_NAME: String = "default";
+static mut AUTHOR: String = "anon";
+static SPLASH: String = "The best music program";
+
 struct Sample {
     audio: [i8; SAMPLE_LENGTH as usize], //This seems really hacky, I hope it doesn't cause problems
     pitch: i8,
@@ -186,6 +190,14 @@ Signal (for control signals like pitch change/whatever)
 formatting info: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 \033[7 (selected), if you want to you can also use color and bold and other fancy things.
 */
+
+fn display_sequencer_screen()
+{
+    // If help, display help
+    print!("\e[2J"); //Erase screen, figure out what escape sequences rust supports
+    println!("{} - {} - \'{}\' ^w^ {}", PROJECT_NAME, ); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
+    println!();
+}
 
 fn load()
 {
