@@ -9,13 +9,14 @@ use std::io;
 // Allow editing defaults later
 // Add demo scene at beggining if bored
 // 30 minutes 9:15 9/24/2025
+// 30 mintues 11:30PM 9/24/2025
 
 // Reuirements
 // Variables: mutable and unmutable - done (unmutable by default)
 // loops - done
 // functions: transfer ownership or borrow refernce - done
 // vec data structure - done
-// match keyword - apparently like switch, I don't have a use for this, so figure something out.
+// match keyword - pretty much done, just need to put the code in place
 
 const SAMPLE_BITRATE: i32 = 22 * 1024;
 const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
@@ -113,6 +114,79 @@ fn sequence_loop(sequence: &Vec<Step>)
     }
 }
 
+// Display should look like this for sequencer:
+
+/*
+(Help bar, off by default, not implemented)
+ProjectName - Author -                                  EXPGSTracker
+[1][2][3][4][5][6][7][8][9][8][7][6][5][4][3][2]...[1] |Pattern (1)
+--------------------------------------------------------------------
+TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:
+......|......|......|......|......|......|......|......|(samplename)
+......|......|......|......|......|......|......|......|Autostep:
+......|......|......|......|......|......|......|......|(number)
+......|......|......|......|......|......|......|......|PPQ:
+......|......|......|......|......|......|......|......|(PPQ)
+......|......|......|......|......|......|......|......|BPM:
+......|......|......|......|......|......|......|......|(BPM)
+......|......|......|......|......|......|......|......|Scale/Mode:
+......|......|......|......|......|......|......|......|(Not implemented)
+......|......|......|......|......|......|......|......|
+\/\/\/ (pgdown/pgup)
+(Information on cursor selection)
+CMD:_
+
+So we have a header at top containing {project_name} {author} and "EXPGSTracker"
+After that we have the pattern sequencer, in this example filled longer than display
+which produces ... which shows there are hidden patterns in the sequence
+The pattern number is to the right of this (pattern you are currently editing)
+With all of these you should ideally be able to cursor to the thing you want to edit
+Then type in a new value, but we also should allow shortcuts and commands to edit things.
+Then we display tracks with the {TrackName} (6 characters)
+Below that we have {Data} (6 characters, ...... means empty)
+Arrows indicating if further tracks are not displayed on screens
+Arrows up would appear above if scrolled down
+To the right we have information about current selections
+Sample:
+{Currently Selected Sample}
+Autostep:
+{Autostep length}
+PPQ:
+{PulsePerQuarter}
+BPM:
+{BPM}
+CMD appears when ` is pressed and can be cancelled with esc
+This will be implemented with a cartesian co-ordinate system
+so that the program knows where the cursor is and highlights that area
+row 0 is title information and such
+row 1 is sequencer which is stored as a vector
+row 2-{pattern length} is tracker
+column 9 (or 1+{track#}) is tracked as a seperate array
+So we have:
+-Array with project metadata
+-Vector with sequencer information
+-variable with current track
+-Array with pattern data
+-Array with project data
+-We just have to keep track of when to swap cursor between these things
+-Use integer to keep track of which one is selected, and if moved off (right, down, left, up)
+-Then we automatically switch that variable.
+
+How information is displayed in boxes:
+A#1C01
+^  ^
+|  Channel
+Note
+And:
+123C01
+^  ^
+|  Channel
+Signal (for control signals like pitch change/whatever)
+
+formatting info: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+\033[7 (selected), if you want to you can also use color and bold and other fancy things.
+*/
+
 fn load()
 {
     // Load wavy files into memory
@@ -124,3 +198,31 @@ fn edit_samples()
     // Do digital signal processing to the samples loaded into memory
     // Make an undo function if you care about usability
 }
+
+/*
+https://doc.rust-lang.org/rust-by-example/flow_control/match.html
+Code to match 8 bit integer to corresponding MIDI note
+
+midi 0 = A
+Repeats every 12 notes
+A, A#, B, C, C#, D, D#, E, F, F#, G, G#
+So modulo 12 to find octave then use the remainder with this match
+(so we can store notes as numbers, but display as notes)
+string = match pitch
+{
+    0 => "A",
+    1 => "A#",
+    2 => "B",
+    3 => "C",
+    4 => "C#",
+    5 => "D",
+    6 => "D#",
+    7 => "E",
+    8 => "F",
+    9 => "F#",
+    10 => "G",
+    11 => "G#",
+};
+
+Would be smart to have another version that displays as flat
+*/
