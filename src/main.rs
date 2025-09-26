@@ -11,6 +11,8 @@ use std::{collections::btree_map::Range, io};
 // 30 minutes 9:15 9/24/2025
 // 30 mintues 11:30PM 9/24/2025
 // 1 hour 9/26/2025 12:00 PM
+// 30 minutes 9/26/2025
+// https://crates.io/crates/crossterm
 
 // Reuirements
 // Variables: mutable and unmutable - done (unmutable by default)
