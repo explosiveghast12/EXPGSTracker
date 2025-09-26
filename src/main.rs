@@ -1,4 +1,4 @@
-use std::io;
+use std::{collections::btree_map::Range, io};
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
 // I have been working on this for ~30min 2:00pm 9/23/2025, add to time card
@@ -10,6 +10,7 @@ use std::io;
 // Add demo scene at beggining if bored
 // 30 minutes 9:15 9/24/2025
 // 30 mintues 11:30PM 9/24/2025
+// 1 hour 9/26/2025 12:00 PM
 
 // Reuirements
 // Variables: mutable and unmutable - done (unmutable by default)
@@ -20,6 +21,7 @@ use std::io;
 
 const SAMPLE_BITRATE: i32 = 22 * 1024;
 const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
+const VERSION: i32 = 1; // This does limit us to 2^32 versions we can release, so sad
 //Wouldn't it be funny if longer samples were just played as shorter samples played after another?
 //That would allow for some fun granulization
 
@@ -30,9 +32,9 @@ const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
 // So where should I put this? I could make a class, but I want to do functional programming
 // I guess I should put this in the main function, and then pass it into my other functions
 
-static mut PROJECT_NAME: String = "default";
-static mut AUTHOR: String = "anon";
-static SPLASH: String = "The best music program";
+//static mut PROJECT_NAME: String = "default";
+//static mut AUTHOR: String = "anon";
+//static SPLASH: String = "The best music program";
 
 struct Sample {
     audio: [i8; SAMPLE_LENGTH as usize], //This seems really hacky, I hope it doesn't cause problems
@@ -52,10 +54,69 @@ struct Step
     notes: Vec<Note>
 }
 
+struct Pattern
+{
+    pattern: Vec<Step> // Arrays may be better, but then it's dependent on what's decided on compile time, I want to be able to change that
+}
+
+struct Sequence
+{
+    sequence: Vec<Pattern>
+}
+
+struct Globe // All the data we need passed between functions, only should borrow this (pass the reference)
+{
+    seq: Sequence,
+    project_name: String,
+    author: String,
+    samples: Vec<Sample>,
+    splash_text: String,
+    title: String
+}
+
+impl Globe
+{
+    fn new() -> Globe
+    {
+        Globe
+        {
+        // Do I need to define vectors as empty??
+            project_name: String::from("0w0"), // Defaults are here for no reason
+            author: String::from("Furro"),
+            seq: Sequence::new(),
+            samples: Vec::new(),
+            splash_text: get_quote(),
+            title: get_program_name()
+        }
+    }
+    // implement getters
+    fn name(&self) -> &String
+    {
+        &self.project_name
+    }
+
+    fn author(&self) -> &String
+    {
+        &self.author
+    }
+
+    fn splash(&self) -> &String
+    {
+        &self.splash_text
+    }
+
+    fn title(&self) -> &String
+    {
+        &self.title
+    }    
+}
+
 // Figure out vectors
 // Read this: https://doc.rust-lang.org/std/time/index.html
 
 fn main() -> io::Result<()> {
+    // Initialize global data structure
+    let firmament = Globe::new();
     // Define variables that we will need throughout the program
     let sequence: Vec<Step> = Vec::new();
     let mut buffer = String::new();
@@ -78,7 +139,7 @@ fn main() -> io::Result<()> {
         }
         else if buffer.trim() == "sequence"
         {
-            sequence_loop(&sequence);
+            sequence_loop(firmament, stdin);
         }
         else if buffer.trim() == "samples"
         {
@@ -100,8 +161,9 @@ fn say_hi()
     println!("hi");
 }
 
-fn sequence_loop(sequence: &Vec<Step>)
+fn sequence_loop(firm: Globe, stdin: Stdin)
 {
+    let buffer = String::new();
     // Add/record notes into vector
     // Allow playback
     // I could make a macro that generates these loops, I should. Maybe one day.
@@ -191,12 +253,12 @@ formatting info: https://stackoverflow.com/questions/4842424/list-of-ansi-color-
 \033[7 (selected), if you want to you can also use color and bold and other fancy things.
 */
 
-fn display_sequencer_screen()
+fn display_sequencer_screen(firm: Globe) // The display needs to know
 {
     // If help, display help
-    print!("\e[2J"); //Erase screen, figure out what escape sequences rust supports
-    println!("{} - {} - \'{}\' ^w^ {}", PROJECT_NAME, ); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
-    println!();
+    print!("{}[2J", 27 as char); //clears screen, from https://stackoverflow.com/questions/34837011/how-to-clear-the-terminal-screen-in-rust-after-a-new-line-is-printed
+    println!("{} - {} - \'{}\' ^w^ {}", firm.name(), firm.author(), firm.splash(), firm.title()); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
+    println!("{} |Pattern: {}");
 }
 
 fn load()
@@ -238,3 +300,27 @@ string = match pitch
 
 Would be smart to have another version that displays as flat
 */
+
+fn get_quote() -> String // Returns random quote
+{
+    return "non-human userbase".to_string();
+}
+
+fn get_program_name() -> String // Returns some variation of EXPGSTracker
+{
+    return "EZGQRTracker".to_string();
+}
+
+fn sequence_to_string(seq: Sequence) -> String
+{
+    let mut sequence_displayed: String = String::new();
+    for i in 0..16 // So add another variable which is shift, only allow shift if greater than whatever, that would be cursor code
+    {
+        // Append pattern number like [1] and blank if not in range
+        // Also need to know where we are viewing the string from
+        sequence_displayed.push_str("");
+    }
+    // 17
+    // 18
+    return sequence_displayed;
+}
