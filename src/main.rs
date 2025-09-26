@@ -59,6 +59,51 @@ struct Pattern
     pattern: Vec<Step> // Arrays may be better, but then it's dependent on what's decided on compile time, I want to be able to change that
 }
 
+struct SeqCursor // Do we need a cursor for only sequencing?
+{
+    row: i32, // Row, # columns varies based on row
+    // You can reset column number each time, but why would you?
+    // Or track based on character, then change character based on row.
+    // That sounds better
+    column: i32 // What maniac has 2^32 rows on their terminal?
+    // Of course, this isn't necessary to optimize since I think 64 bit architecture doesn't have an 8 bit word size anyway
+    // Then snap to nearest position on row change
+}
+// Implementation for cursor?
+impl SeqCursor
+{
+    fn new() -> SeqCursor
+    {
+        SeqCursor
+        {
+            row: 0,
+            column: 0
+        }
+    }
+
+    fn cursor_up()
+    {
+        // Where are we now, where are we going?
+        // Do we even have the help screen?
+        // The command function doesn't need to use the same display function, just write a newline
+    }
+
+    fn cursor_down()
+    {
+
+    }
+
+    fn cursor_left()
+    {
+
+    }
+
+    fn cursor_right()
+    {
+
+    }
+}
+
 struct Sequence
 {
     sequence: Vec<Pattern>
@@ -161,7 +206,7 @@ fn say_hi()
     println!("hi");
 }
 
-fn sequence_loop(firm: Globe, stdin: Stdin)
+fn sequence_loop(firm: Globe, stdin: io::Stdin)
 {
     let buffer = String::new();
     // Add/record notes into vector
@@ -259,6 +304,7 @@ fn display_sequencer_screen(firm: Globe) // The display needs to know
     print!("{}[2J", 27 as char); //clears screen, from https://stackoverflow.com/questions/34837011/how-to-clear-the-terminal-screen-in-rust-after-a-new-line-is-printed
     println!("{} - {} - \'{}\' ^w^ {}", firm.name(), firm.author(), firm.splash(), firm.title()); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
     println!("{} |Pattern: {}");
+    // for loop up until size of terminal, do we have a terminal size?
 }
 
 fn load()
@@ -321,6 +367,17 @@ fn sequence_to_string(seq: Sequence) -> String
         sequence_displayed.push_str("");
     }
     // 17
+    // Add a ... if there are more than 18, otherwise display last two normally
     // 18
     return sequence_displayed;
+}
+
+fn command(stdin: io::Stdin)
+{
+    let mut buffer: String = String::new();
+    print!("CMD: ");
+    stdin.read_line(&mut buffer); // Do we need a ?
+    // tokenize the command
+    let command: Vec<String> buffer.split(" "); // This command is wrong
+    println!("Commands not implemented");
 }
