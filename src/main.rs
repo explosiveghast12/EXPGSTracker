@@ -211,7 +211,7 @@ fn main() -> io::Result<()> {
         }
         else if buffer.trim() == "sequence"
         {
-            sequence_loop(firmament, stdin);
+            sequence_loop(&firmament, &stdin);
         }
         else if buffer.trim() == "samples"
         {
@@ -233,7 +233,7 @@ fn say_hi()
     println!("hi");
 }
 
-fn sequence_loop(firm: Globe, stdin: io::Stdin)
+fn sequence_loop(firm: &Globe, stdin: &io::Stdin)
 {
     let mut buffer = String::new();
     // Add/record notes into vector
@@ -243,13 +243,14 @@ fn sequence_loop(firm: Globe, stdin: io::Stdin)
     // play, stop (can we use f1 and f2?)
     // display an ascii tracker and use arrow keys to move
     // Extra (and easier for me) algorithmic input, ` to access commands then type in Notes, length, scale, pattern, etc. Use overloading if it exists in this language.`
-    loop {
-        if buffer.trim() == "back"
-        {
-            stdin.read_line(&mut buffer); // Okay, so this probably won't work since buffer isn't defined here, two options, 1: make the buffer global, 2: reinitialize buffer
-            break;
-        }
-    }
+    //loop {
+        //if buffer.trim() == "back"
+        //{
+        //    stdin.read_line(&mut buffer);
+        //    break;
+        //}
+    //}
+    display_sequencer_screen(firm);
 }
 
 // Display should look like this for sequencer:
@@ -325,22 +326,23 @@ formatting info: https://stackoverflow.com/questions/4842424/list-of-ansi-color-
 \033[7 (selected), if you want to you can also use color and bold and other fancy things.
 */
 
-fn display_sequencer_screen(firm: Globe) // The display needs to know
+fn display_sequencer_screen(firm: &Globe) // The display needs to know
 {
     // If help, display help
     print!("{}[2J", 27 as char); //clears screen, from https://stackoverflow.com/questions/34837011/how-to-clear-the-terminal-screen-in-rust-after-a-new-line-is-printed
     println!("{} - {} - \'{}\' ^w^ {}", firm.name(), firm.author(), firm.splash(), firm.title()); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
-    println!("{} |Pattern: {}", sequence_to_string(firm.seq), 1); // Do I need ()? I don't think so
+    println!("{} |Pattern: {}", sequence_to_string(&firm.seq), 1); // Do I need ()? I don't think so
     println!("--------------------------------------------------------------------");
     println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
-    for i in 0..32
+    for i in 0..16
     {
         for _y in 0..8
         {
             // Track 1, 2, 3, 4, 5, 6, 7, 8
-            println!("......|"); // This will change
+            print!("......|"); // This will change
         }
         // print sample, autostep, ppq, etc. on appropriate lines
+        println!();
     }
     // for loop up until size of terminal, do we have a terminal size?
 }
@@ -395,7 +397,7 @@ fn get_program_name() -> String // Returns some variation of EXPGSTracker
     return "EZGQRTracker".to_string();
 }
 
-fn sequence_to_string(seq: Sequence) -> String
+fn sequence_to_string(seq: &Sequence) -> String
 {
     let mut sequence_displayed: String = String::new();
     let mut temp_string: String = String::new();
