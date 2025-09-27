@@ -13,6 +13,7 @@ use std::{collections::btree_map::Range, io};
 // 1 hour 9/26/2025 12:00 PM
 // 30 minutes 9/26/2025
 // https://crates.io/crates/crossterm
+//
 
 // Reuirements
 // Variables: mutable and unmutable - done (unmutable by default)
@@ -109,6 +110,23 @@ impl SeqCursor
 struct Sequence
 {
     sequence: Vec<Pattern>
+}
+
+impl Sequence
+{
+    fn new()
+    {
+    }
+    
+    fn get_pattern_number(&self, location: i32) -> i32
+    {
+        location //Not implemented
+    }
+
+    fn length(&self) -> i32
+    {
+        self.sequence.len() as i32 // No implicit conversions, so sad
+    }
 }
 
 struct Globe // All the data we need passed between functions, only should borrow this (pass the reference)
@@ -210,7 +228,7 @@ fn say_hi()
 
 fn sequence_loop(firm: Globe, stdin: io::Stdin)
 {
-    let buffer = String::new();
+    let mut buffer = String::new();
     // Add/record notes into vector
     // Allow playback
     // I could make a macro that generates these loops, I should. Maybe one day.
@@ -221,7 +239,7 @@ fn sequence_loop(firm: Globe, stdin: io::Stdin)
     loop {
         if buffer.trim() == "back"
         {
-            stdin.read_line(&mut buffer)?; // Okay, so this probably won't work since buffer isn't defined here, two options, 1: make the buffer global, 2: reinitialize buffer
+            stdin.read_line(&mut buffer); // Okay, so this probably won't work since buffer isn't defined here, two options, 1: make the buffer global, 2: reinitialize buffer
             break;
         }
     }
@@ -362,15 +380,42 @@ fn get_program_name() -> String // Returns some variation of EXPGSTracker
 fn sequence_to_string(seq: Sequence) -> String
 {
     let mut sequence_displayed: String = String::new();
+    let mut temp_string: String = String::new();
+    let length_seq: i32 = seq.length();
     for i in 0..16 // So add another variable which is shift, only allow shift if greater than whatever, that would be cursor code
     {
-        // Append pattern number like [1] and blank if not in range
-        // Also need to know where we are viewing the string from
-        sequence_displayed.push_str("");
+        if i < length_seq
+        {
+            temp_string.push_str("[");
+            temp_string.push_str(&seq.get_pattern_number(i).to_string());
+            temp_string.push_str("]");
+            // Append pattern number like [1] and blank if not in range
+            // Also need to know where we are viewing the string from
+            sequence_displayed.push_str(&temp_string);
+            temp_string.clear();
+        }
+        else {
+            sequence_displayed.push_str("   "); // THREE spaces
+        }
     }
     // 17
+    if length_seq < 17 // Most likely case, hopefully
+    {
+        sequence_displayed.push_str("      "); // SIX spaces
+    }
+    else if length_seq == 17 // A special case
+    {
+        sequence_displayed.push_str(&temp_string);
+    }
+    else {
+        sequence_displayed.push_str("   ");
+    }
     // Add a ... if there are more than 18, otherwise display last two normally
     // 18
+
+    // Now we finished the sequencer display, we now display the current pattern number
+    sequence_displayed.push_str("|Pattern ");
+    sequence_displayed.push_str();
     return sequence_displayed;
 }
 
@@ -380,6 +425,6 @@ fn command(stdin: io::Stdin)
     print!("CMD: ");
     stdin.read_line(&mut buffer); // Do we need a ?
     // tokenize the command
-    let command: Vec<String> buffer.split(" "); // This command is wrong
+    // let command: Vec<String> buffer.split(" "); // This command is wrong
     println!("Commands not implemented");
 }
