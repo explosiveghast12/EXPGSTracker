@@ -57,9 +57,15 @@ struct Step
     notes: Vec<Note>
 }
 
+struct Track
+{
+    track: Vec<Step>
+}
+
 struct Pattern
 {
-    pattern: Vec<Step> // Arrays may be better, but then it's dependent on what's decided on compile time, I want to be able to change that
+    pattern: Vec<Track> // Arrays may be better, but then it's dependent on what's decided on compile time, I want to be able to change that
+    // Should be length 8 right now
 }
 
 struct SeqCursor // Do we need a cursor for only sequencing?
@@ -114,8 +120,9 @@ struct Sequence
 
 impl Sequence
 {
-    fn new()
+    fn new() -> Sequence
     {
+        Sequence { sequence: Vec::new() }
     }
     
     fn get_pattern_number(&self, location: i32) -> i32
@@ -323,7 +330,18 @@ fn display_sequencer_screen(firm: Globe) // The display needs to know
     // If help, display help
     print!("{}[2J", 27 as char); //clears screen, from https://stackoverflow.com/questions/34837011/how-to-clear-the-terminal-screen-in-rust-after-a-new-line-is-printed
     println!("{} - {} - \'{}\' ^w^ {}", firm.name(), firm.author(), firm.splash(), firm.title()); //Global variables would be nice, so would classes, but I'm stubborn, let's use some global variables
-    println!("{} |Pattern: {}");
+    println!("{} |Pattern: {}", sequence_to_string(firm.seq), 1); // Do I need ()? I don't think so
+    println!("--------------------------------------------------------------------");
+    println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
+    for i in 0..32
+    {
+        for _y in 0..8
+        {
+            // Track 1, 2, 3, 4, 5, 6, 7, 8
+            println!("......|"); // This will change
+        }
+        // print sample, autostep, ppq, etc. on appropriate lines
+    }
     // for loop up until size of terminal, do we have a terminal size?
 }
 
@@ -412,10 +430,6 @@ fn sequence_to_string(seq: Sequence) -> String
     }
     // Add a ... if there are more than 18, otherwise display last two normally
     // 18
-
-    // Now we finished the sequencer display, we now display the current pattern number
-    sequence_displayed.push_str("|Pattern ");
-    sequence_displayed.push_str();
     return sequence_displayed;
 }
 
