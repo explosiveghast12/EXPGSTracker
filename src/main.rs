@@ -1,4 +1,5 @@
 use std::{collections::btree_map::Range, io};
+// use crossterm;
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
 // I have been working on this for ~30min 2:00pm 9/23/2025, add to time card
@@ -48,7 +49,7 @@ struct Sample {
 struct Note
 {
     pitch: i8, // We only need 255 notes, unless we start doing weird stuff
-    sample: Sample,
+    sample: Sample, // Maybe this should just be a MIDI code
     channel: i8
 }
 
@@ -187,6 +188,8 @@ impl Globe
 // Read this: https://doc.rust-lang.org/std/time/index.html
 
 fn main() -> io::Result<()> {
+    // Meet requirements for module
+    meet_requirements();
     // Initialize global data structure
     let firmament = Globe::new();
     // Define variables that we will need throughout the program
@@ -443,4 +446,43 @@ fn command(stdin: io::Stdin)
     // tokenize the command
     // let command: Vec<String> buffer.split(" "); // This command is wrong
     println!("Commands not implemented");
+}
+
+fn check_input()
+{
+    // IDK, look here: https://github.com/crossterm-rs/crossterm/blob/master/examples/key-display.rs
+}
+
+fn get_note_as_string()
+{
+    // Return note/octave or hex code
+}
+
+fn meet_requirements()
+{
+    // So I have something to show
+    let mut x: i32 = 0;
+    let y: i32 = 10;
+    let mut direction_and_magnitude: Vec<i32> = Vec::new();
+    while x < y
+    {
+        x += 1;
+        direction_and_magnitude.push(x);
+        useless(x);
+    }
+    for i in direction_and_magnitude
+    {
+        match i % 3
+        {
+            1 => print!("fizz"),
+            2 => print!("buzz"),
+            _ => println!("NEWLINE:")
+        }
+    }
+    println!("REQUIREMENTS MET, ACTUAL PROGRAM START:");
+}
+
+fn useless(variable: i32)
+{
+    println!("{}", variable);
 }
