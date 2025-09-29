@@ -1,4 +1,4 @@
-use std::{collections::btree_map::Range, io};
+use std::{collections::btree_map::Range, io, process::Stdio};
 // use crossterm;
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
@@ -204,7 +204,7 @@ fn main() -> io::Result<()> {
         {
             break;
         }
-        else if buffer.trim() == "help"
+        else if buffer.trim() == "help" // Do I really need to trim the buffer every time
         {
             help();
         }
@@ -218,9 +218,27 @@ fn main() -> io::Result<()> {
         }
         else if buffer.trim() == "samples"
         {
-            edit_samples();
+            edit_samples(&stdin);
         }
-        println!("{}", buffer);
+        else if buffer.trim() == "hi"
+        {
+            say_hi();
+        }
+        else if buffer.trim() == "mix"
+        {
+            println!("Did you really think I've implemented mixing yet?");
+        }
+        else if buffer.trim() == "master"
+        {
+            master_edit();
+        }
+        else if buffer.trim() == "export"
+        {
+            // Export project as audio or whatever.
+        }
+        // Should command be from a global place? Probably not since context matters for commands.
+        // That could create a bad UX though...
+        // println!("{}", buffer); // This was here for debugging
         buffer.clear();
     }
     Ok(()) // This is a weird thing, I don't really understand it. LOOK IT UP.
@@ -229,6 +247,7 @@ fn main() -> io::Result<()> {
 fn help()
 {
     println!("1. quit\n2. load\n3. sequence\n4. samples");
+    println!("If you need help with bugs/bad UI try alt-f4...");
 }
 
 fn say_hi()
@@ -356,10 +375,38 @@ fn load()
     // Or projects depending on file extension
 }
 
-fn edit_samples()
+fn edit_samples(stdin: &io::Stdin)
 {
+    // We are not tokenizing, not yet at least. This should make the software easier to use, but also slower to use.
+    // Maybe just run tokenized command if more than one word is given.
+    let mut buffer = String::new();
+    loop {
+        stdin.read_line(&mut buffer);
+        if buffer.trim() == "quit"
+        {
+            break;
+        }
+        else if buffer.trim() == "truncate" // Wrong, we need to check arguments
+        {
+            // Run truncate command
+        }
+        else if buffer.trim() == "repitch"
+        {
+            // run repitch command
+        }
+        else if buffer.trim() == "time-stretch" // This one may be hard to spell for people
+        {
+            // Run time-stretch
+        }
+        else if buffer.trim() == "param-eq"
+        {
+            // Run EQ
+        }
+        buffer.clear();
+    }
     // Do digital signal processing to the samples loaded into memory
     // Make an undo function if you care about usability
+
 }
 
 /*
@@ -485,4 +532,9 @@ fn meet_requirements()
 fn useless(variable: i32)
 {
     println!("{}", variable);
+}
+
+fn master_edit()
+{
+    // Choose between brickwall, clear, etc...
 }
