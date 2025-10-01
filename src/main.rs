@@ -1,4 +1,10 @@
 use std::{collections::btree_map::Range, io, process::Stdio};
+use std::env;
+use std::fs;
+use rand::{rng, Rng, RngCore};
+// Now with more rng!!!
+
+use audio;
 // use crossterm;
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
@@ -13,8 +19,14 @@ use std::{collections::btree_map::Range, io, process::Stdio};
 // 30 mintues 11:30PM 9/24/2025
 // 1 hour 9/26/2025 12:00 PM
 // 30 minutes 9/26/2025
+// 30 minutes 10/1/2025 2:00pm
 // https://crates.io/crates/crossterm
-//
+// NOTE: When using audio you have to access whatever audio device that person's computer is using
+// Here is a cross platform library: https://github.com/RustAudio/cpal, but that uses WASAPI, not ASIO
+// Whatever, figure it out
+// (please don't make people use ASIO4All)
+// But ASIO is kind of unneccesary for this software
+// Unless you care about having multiple audio in/outs
 
 // Reuirements
 // Variables: mutable and unmutable - done (unmutable by default)
@@ -40,10 +52,12 @@ const VERSION: i32 = 1; // This does limit us to 2^32 versions we can release, s
 //static mut AUTHOR: String = "anon";
 //static SPLASH: String = "The best music program";
 
-struct Sample {
-    audio: [i8; SAMPLE_LENGTH as usize], //This seems really hacky, I hope it doesn't cause problems
+struct Sample { // Could just have sample made of audio buffers, but that sound like it would cause performance issues
+    audio: Vec<f32>, // I have decided to use a vector to store audio data
     pitch: i8,
-    reverse: bool
+    reverse: bool,
+    sample_name: String,
+    sample_tempo: f32
 }
 
 struct Note
@@ -144,7 +158,8 @@ struct Globe // All the data we need passed between functions, only should borro
     author: String,
     samples: Vec<Sample>,
     splash_text: String,
-    title: String
+    title: String,
+    // audio_buffer: audio::buf::Interleaved
 }
 
 impl Globe
@@ -159,7 +174,8 @@ impl Globe
             seq: Sequence::new(),
             samples: Vec::new(),
             splash_text: get_quote(),
-            title: get_program_name()
+            title: get_program_name(),
+            // audio_buffer: buf = audio::buf::Interleaved::<f32>::new()
         }
     }
     // implement getters
@@ -188,6 +204,9 @@ impl Globe
 // Read this: https://doc.rust-lang.org/std/time/index.html
 
 fn main() -> io::Result<()> {
+    // Play (probably very loud) noise
+    // Technically just fills buffers with random noise, but I figure that the buffers are being played?
+    startup_noises();
     // Meet requirements for module
     meet_requirements();
     // Initialize global data structure
@@ -537,4 +556,44 @@ fn useless(variable: i32)
 fn master_edit()
 {
     // Choose between brickwall, clear, etc...
+}
+
+fn load_file()
+{
+    // Check file extension so we know what file we are working with
+    // Implement later
+}
+
+fn load_wav()
+{
+    // Load *.wav file as data (32 bit float of course)
+}
+
+// At this point I wish I knew how to seperate functions into seperate files
+
+fn startup_noises()
+{
+    // Filepath to startup noises
+    // Play that wavy file
+    // BTW, WAV files are a subtype of the RIFF file format or whatever,
+    // Which means they have a dumb header,
+    // It really isn't important, just skip it.
+    // Though you do want to know the bit depth
+
+    // Until we figure out reading files, we can generate NOISE, so fun
+    // It would be fun (easy) to make a stupid synth engine instead of using samples
+    // But that would be worse software
+    let mut buf = audio::buf::Dynamic::<f32>::new(); // Woah, we make an audio buffer
+
+    buf.resize_channels(2);
+    buf.resize_frames(2048);
+
+    // Just so you know, this is example code for the audio crate.
+
+    let mut rng= rand::rng();
+    rng.fill(&mut buf[0]);
+    rng.fill(&mut buf[1]);
+
+    // The more I look at this audio crate, the more I realize the README is really old
+    // Can I update this?
 }
