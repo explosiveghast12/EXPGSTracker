@@ -390,15 +390,39 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
     println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
     for i in 0..16
     {
-        for _y in 0..8
+        for y in 0..8
         {
             // Track 1, 2, 3, 4, 5, 6, 7, 8
-            print!("......|"); // This will change
+            print!("{}", get_data(y, i)); // This will change
         }
         // print sample, autostep, ppq, etc. on appropriate lines
-        println!();
+        // 
+        println!("{}", get_text_after(i));
     }
     // for loop up until size of terminal, do we have a terminal size?
+}
+
+fn get_text_after(row: i32) -> String
+{
+    return match row
+    {
+        0 => "Sample".to_string(),
+        1 => "(sample_name)".to_string(),
+        2 => "Autostep".to_string(),
+        3 => "(step_size)".to_string(),
+        4 => "PPQ".to_string(),
+        5 => "(ppq)".to_string(),
+        6 => "BPM".to_string(),
+        7 => "(tempo)".to_string(),
+        8 => "Scale/mode".to_string(),
+        9 => "(scale)".to_string(),
+        _ => "".to_string()
+    };
+}
+
+fn get_data(track: i32, column: i32) -> String
+{
+    return "......|".to_string();
 }
 
 fn load()
