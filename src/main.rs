@@ -388,6 +388,8 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
     println!("{} |Pattern: {}", sequence_to_string(&firm.seq), 1); // Do I need ()? I don't think so
     println!("--------------------------------------------------------------------");
     println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
+    // if not at start then display ^^^, don't let cursor move here? Just move up (How to access project metadata then?)
+    // support pgup and pgdown (Jump x tracks down)
     for i in 0..16
     {
         for y in 0..8
@@ -400,6 +402,8 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
         println!("{}", get_text_after(i));
     }
     // for loop up until size of terminal, do we have a terminal size?
+    // if more lines to display then print \/\/\/
+    // Don't allow cursor to move here, just shift down
 }
 
 fn get_text_after(row: i32) -> String
@@ -521,7 +525,7 @@ fn sequence_to_string(seq: &Sequence) -> String
             temp_string.clear();
         }
         else {
-            sequence_displayed.push_str("   "); // THREE spaces
+            sequence_displayed.push_str("[.]"); // THREE things, this is for visual clarity
         }
     }
     // 17
