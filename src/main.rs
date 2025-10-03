@@ -2,7 +2,10 @@ use std::{collections::btree_map::Range, io, process::Stdio};
 use std::env;
 use std::fs;
 use rand::{rng, Rng, RngCore};
-use cpal;
+use cpal::{
+    traits::{DeviceTrait, HostTrait, StreamTrait},
+    FromSample, Sample, SizedSample, I24,
+};
 // Now with more rng!!!
 
 use audio;
@@ -53,7 +56,7 @@ const VERSION: i32 = 1; // This does limit us to 2^32 versions we can release, s
 //static mut AUTHOR: String = "anon";
 //static SPLASH: String = "The best music program";
 
-struct Sample { // Could just have sample made of audio buffers, but that sound like it would cause performance issues
+struct AudioSample { // Could just have sample made of audio buffers, but that sound like it would cause performance issues
     audio: Vec<f32>, // I have decided to use a vector to store audio data
     pitch: i8,
     reverse: bool,
@@ -64,7 +67,7 @@ struct Sample { // Could just have sample made of audio buffers, but that sound 
 struct Note
 {
     pitch: i8, // We only need 255 notes, unless we start doing weird stuff
-    sample: Sample, // Maybe this should just be a MIDI code
+    sample: i8, // Reference sample number, currently only 255
     channel: i8
 }
 
@@ -157,7 +160,7 @@ struct Globe // All the data we need passed between functions, only should borro
     seq: Sequence,
     project_name: String,
     author: String,
-    samples: Vec<Sample>,
+    samples: Vec<AudioSample>,
     splash_text: String,
     title: String,
     // audio_buffer: audio::buf::Interleaved
@@ -207,20 +210,12 @@ impl Globe
 fn main() -> io::Result<()> {
     let host = cpal::default_host();
     let device = host.default_output_device().unwrap();
-    let config = device.default_output_config().unwrap().into();
-    let stream = devce.build_output_string(
-        &config,
-        move |data: &mut [f32], _: &cpal::OutputCallbackInfo|
-        {
-            // This code is from the examples btw
-        },
-        move |err|
-        {
-            // This seems to be reacting to differente events
-        },
-        None
-    );
+    let config = device.default_output_config().unwrap();
+    println!("Default output config: {config:?}");
+    run::<f32>(&device, &config.into());
     // This code should be moved into a structure to keep main nice.
+
+
 
     // Play (probably very loud) noise
     // Technically just fills buffers with random noise, but I figure that the buffers are being played?
@@ -615,3 +610,50 @@ fn startup_noises()
     // The more I look at this audio crate, the more I realize the README is really old
     // Can I update this?
 }
+
+// From example code
+
+pub fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Result<(), anyhow::Error>
+where
+    T: SizedSample + FromSample<f32>,
+{
+    let sample_rate = config.sample_rate.0 as f32;
+    let channels = config.channels as usize;
+
+    // Produce a sinusoid of maximum amplitude.
+    let mut sample_clock = 0f32;
+    let mut next_value = move || {
+        sample_clock = (sample_clock + 1.0) % sample_rate;
+        (sample_clock * 440.0 * 2.0 * std::f32::consts::PI / sample_rate).sin()
+    };
+
+    let err_fn = |err| eprintln!("an error occurred on stream: {err}");
+
+    let stream = device.build_output_stream(
+        config,
+        move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
+            write_data(data, channels, &mut next_value)
+        },
+        err_fn,
+        None,
+    )?;
+    stream.play()?;
+
+    std::thread::sleep(std::time::Duration::from_millis(1000));
+
+    Ok(())
+}
+
+fn write_data<T>(output: &mut [T], channels: usize, next_sample: &mut dyn FnMut() -> f32)
+where
+    T: Sample + FromSample<f32>,
+{
+    for frame in output.chunks_mut(channels) {
+        let value: T = T::from_sample(next_sample());
+        for sample in frame.iter_mut() {
+            *sample = value;
+        }
+    }
+}
+
+// End example code
