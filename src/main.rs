@@ -2,6 +2,7 @@ use std::{collections::btree_map::Range, io, process::Stdio};
 use std::env;
 use std::fs;
 use rand::{rng, Rng, RngCore};
+use cpal;
 // Now with more rng!!!
 
 use audio;
@@ -204,6 +205,23 @@ impl Globe
 // Read this: https://doc.rust-lang.org/std/time/index.html
 
 fn main() -> io::Result<()> {
+    let host = cpal::default_host();
+    let device = host.default_output_device().unwrap();
+    let config = device.default_output_config().unwrap().into();
+    let stream = devce.build_output_string(
+        &config,
+        move |data: &mut [f32], _: &cpal::OutputCallbackInfo|
+        {
+            // This code is from the examples btw
+        },
+        move |err|
+        {
+            // This seems to be reacting to differente events
+        },
+        None
+    );
+    // This code should be moved into a structure to keep main nice.
+
     // Play (probably very loud) noise
     // Technically just fills buffers with random noise, but I figure that the buffers are being played?
     startup_noises();
