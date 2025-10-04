@@ -1,4 +1,4 @@
-use std::{collections::btree_map::Range, io, process::Stdio};
+use std::{collections::btree_map::Range, io, process::Stdio, time::Duration, io};
 use std::env;
 use std::fs;
 use rand::{rng, Rng, RngCore};
@@ -9,7 +9,15 @@ use cpal::{
 // Now with more rng!!!
 
 use audio;
-// use crossterm;
+use crossterm::{
+    event::{
+        read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
+        EnableFocusChange, EnableMouseCapture, Event,
+    },
+    execute,
+};
+// Allow focus to affect things, or not, I don't know what's better
+
 //In which I try and make a better tracker program than OpenMPT
 //Good luck
 // I have been working on this for ~30min 2:00pm 9/23/2025, add to time card
@@ -760,3 +768,39 @@ where
 }
 
 // End example code
+
+// Modified example code from crossterm
+
+fn print_events() -> io::Result<()> {
+    execute!(
+         std::io::stdout(),
+         EnableBracketedPaste,
+         EnableFocusChange,
+         EnableMouseCapture
+    )?;
+    loop {
+        // `poll()` waits for an `Event` for a given time period
+        if poll(Duration::from_millis(500))? {
+            // It's guaranteed that the `read()` won't block when the `poll()`
+            // function returns `true`
+            match read()? {
+                Event::FocusGained => println!("FocusGained"),
+                Event::FocusLost => println!("FocusLost"),
+                Event::Key(event) => println!("{:?}", event),
+                Event::Mouse(event) => println!("{:?}", event),
+                #[cfg(feature = "bracketed-paste")] // What is bracketed paste? IDK
+                Event::Paste(data) => println!("Pasted {:?}", data),
+                Event::Resize(width, height) => println!("New size {}x{}", width, height),
+            }
+        } else {
+            // Timeout expired and no `Event` is available
+        }
+    }
+    execute!(
+        std::io::stdout(),
+        DisableBracketedPaste,
+        DisableFocusChange,
+        DisableMouseCapture
+    )?;
+    Ok(())
+}
