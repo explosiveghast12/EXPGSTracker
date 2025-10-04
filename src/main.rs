@@ -24,6 +24,7 @@ use audio;
 // 1 hour 9/26/2025 12:00 PM
 // 30 minutes 9/26/2025
 // 30 minutes 10/1/2025 2:00pm
+// 1hr 10/3/2025 5:30pm
 // https://crates.io/crates/crossterm
 // NOTE: When using audio you have to access whatever audio device that person's computer is using
 // Here is a cross platform library: https://github.com/RustAudio/cpal, but that uses WASAPI, not ASIO
@@ -198,14 +199,22 @@ impl Globe
             // audio_buffer: buf = audio::buf::Interleaved::<f32>::new()
         }
     }
-    fn move_down()
+    fn move_down(&mut self)
     {
-        //
+        if self.track_begin > 0
+        {
+            self.track_begin -= 1;
+            self.track_end -= 1;
+        }
     }
 
-    fn move_up()
+    fn move_up(&mut self)
     {
-        //
+        if self.track_end < self.seq.length()
+        {
+            self.track_begin += 1;
+            self.track_end += 1;
+        }
     }
 
     fn track_begin(&self) -> i32
@@ -441,7 +450,7 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
     }
     for i in firm.track_begin()..firm.track_end()
     {
-        for y in 0..8
+        for y in 0..8 // could go 0 to track number, but that may get too wide
         {
             // Track 1, 2, 3, 4, 5, 6, 7, 8
             print!("{}", get_data(y, i)); // This will change
