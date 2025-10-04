@@ -110,26 +110,39 @@ impl SeqCursor
         }
     }
 
-    fn cursor_up()
+    fn cursor_up(&mut self)
     {
         // Where are we now, where are we going?
         // Do we even have the help screen?
         // The command function doesn't need to use the same display function, just write a newline
+        if self.position.0 > 0
+        {
+            self.position.0 -= 1;
+        }
     }
 
-    fn cursor_down()
+    fn cursor_down(&mut self)
     {
-
+        if self.position.0 < 42 // How low can the cursor go?
+        {
+            self.position.0 += 1;
+        }
     }
 
-    fn cursor_left()
+    fn cursor_left(&mut self)
     {
-
+        if self.position.1 > 0
+        {
+            self.position.1 -= 1;
+        }
     }
 
-    fn cursor_right()
+    fn cursor_right(&mut self)
     {
-
+        if self.position.1 > 0
+        {
+            self.position.1 += 42; // How far right can I go? Should make some constants or something
+        } // A constant called screen size, x*y
     }
 
     fn cursor_row(&self) -> i32
