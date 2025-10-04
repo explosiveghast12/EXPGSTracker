@@ -89,11 +89,12 @@ struct Pattern
 
 struct SeqCursor // Do we need a cursor for only sequencing?
 {
-    row: i32, // Row, # columns varies based on row
+    position: (i32, i32)
+    //row: i32, // Row, # columns varies based on row
     // You can reset column number each time, but why would you?
     // Or track based on character, then change character based on row.
     // That sounds better
-    column: i32 // What maniac has 2^32 rows on their terminal?
+    // column: i32 // What maniac has 2^32 rows on their terminal?
     // Of course, this isn't necessary to optimize since I think 64 bit architecture doesn't have an 8 bit word size anyway
     // Then snap to nearest position on row change
 }
@@ -104,8 +105,7 @@ impl SeqCursor
     {
         SeqCursor
         {
-            row: 0,
-            column: 0
+            position: (0, 0)
         }
     }
 
@@ -129,6 +129,16 @@ impl SeqCursor
     fn cursor_right()
     {
 
+    }
+
+    fn cursor_row(&self) -> i32
+    {
+        self.position.0
+    }
+
+    fn cursor_column(&self) -> i32
+    {
+        self.position.1
     }
 }
 
@@ -163,6 +173,9 @@ struct Globe // All the data we need passed between functions, only should borro
     samples: Vec<AudioSample>,
     splash_text: String,
     title: String,
+    cursor: SeqCursor,
+    track_begin: i32,
+    track_end: i32
     // audio_buffer: audio::buf::Interleaved
 }
 
@@ -179,8 +192,30 @@ impl Globe
             samples: Vec::new(),
             splash_text: get_quote(),
             title: get_program_name(),
+            cursor: SeqCursor::new(),
+            track_begin: 0,
+            track_end: 16
             // audio_buffer: buf = audio::buf::Interleaved::<f32>::new()
         }
+    }
+    fn move_down()
+    {
+        //
+    }
+
+    fn move_up()
+    {
+        //
+    }
+
+    fn track_begin(&self) -> i32
+    {
+        self.track_begin
+    }
+
+    fn track_end(&self) -> i32
+    {
+        self.track_end
     }
     // implement getters
     fn name(&self) -> &String
@@ -202,6 +237,16 @@ impl Globe
     {
         &self.title
     }    
+
+    fn cursor_row(&self) -> i32
+    {
+        self.cursor.cursor_row()
+    }
+
+    fn cursor_column(&self) -> i32
+    {
+        self.cursor.cursor_column()
+    }
 }
 
 // Figure out vectors
@@ -390,7 +435,11 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
     println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
     // if not at start then display ^^^, don't let cursor move here? Just move up (How to access project metadata then?)
     // support pgup and pgdown (Jump x tracks down)
-    for i in 0..16
+    if firm.track_begin() != 0
+    {
+        println!("^^^^");
+    }
+    for i in firm.track_begin()..firm.track_end()
     {
         for y in 0..8
         {
@@ -404,6 +453,10 @@ fn display_sequencer_screen(firm: &Globe) // The display needs to know
     // for loop up until size of terminal, do we have a terminal size?
     // if more lines to display then print \/\/\/
     // Don't allow cursor to move here, just shift down
+    if firm.track_end() != firm.seq.length() // -1?
+    {
+        println!("\\/\\/\\/") // how you print "\/\/\/"
+    }
 }
 
 fn get_text_after(row: i32) -> String
