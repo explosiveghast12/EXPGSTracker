@@ -13,7 +13,7 @@ Steps to build and/or run the software:
 
 Or:
 
-1. Download executable (not uploaded yet, expect alpha 0.1 by 10/6/2025)
+1. Download executable (not uploaded yet, expect alpha 0.1 by 11/6/2025)
 2. Launch executable
 
 Instructions for using the software:
