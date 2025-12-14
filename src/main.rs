@@ -11,10 +11,9 @@ use cpal::{
 use audio;
 use crossterm::{
     event::{
-        self, read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
-        EnableFocusChange, EnableMouseCapture, Event, KeyCode
+        poll, read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture,
+        EnableBracketedPaste, EnableFocusChange, EnableMouseCapture, Event,
     },
-    terminal::{disable_raw_mode, enable_raw_mode},
     execute,
 };
 use tokio::time::{sleep, Duration};
@@ -53,6 +52,10 @@ use tokio::time::{sleep, Duration};
 const SAMPLE_BITRATE: i32 = 22 * 1024;
 const SAMPLE_LENGTH: i32 = 10 * SAMPLE_BITRATE;
 const VERSION: i32 = 1; // This does limit us to 2^32 versions we can release, so sad
+const MODE_MENU: i8 = 0;
+const MODE_SEQUENCER: i8 = 1;
+const MODE_TRACKER: i8 = 2;
+const MODE_SAMPLE_EDIT: i8 = 3;
 //Wouldn't it be funny if longer samples were just played as shorter samples played after another?
 //That would allow for some fun granulization
 
@@ -199,7 +202,8 @@ struct Globe // All the data we need passed between functions, only should borro
     title: String,
     cursor: SeqCursor,
     track_begin: i32,
-    track_end: i32
+    track_end: i32,
+    mode: i8,
     // audio_buffer: audio::buf::Interleaved
 }
 
@@ -218,7 +222,8 @@ impl Globe
             title: get_program_name(),
             cursor: SeqCursor::new(),
             track_begin: 0,
-            track_end: 16
+            track_end: 16,
+            mode: MODE_MENU,
             // audio_buffer: buf = audio::buf::Interleaved::<f32>::new()
         }
     }
@@ -346,27 +351,6 @@ fn main() -> io::Result<()> {
         buffer.clear();
     }
     Ok(()) // This is just a return for the operating system saying that we exited successfully (it returns nothing)
-}
-
-async fn input_handler()
-{
-    // Handle input asynchronously
-    // We aren't using interrupts, just polling for input
-    enable_raw_mode()?; // Add error handling later
-    loop {
-        // Wait for input
-        if event::poll(Duration::from_millis(500))? {
-            match read()? {
-                Event::Key(event) => println!("{:?}", event),
-                _ => {}
-            }
-        }
-        // Give time for thread to handle other things
-        sleep(Duration::from_millis(10)).await;
-        // We will not be able to get live input from the keyboard for recording if we do this, have a record mode that polls more often for that.
-        // How fast are you pressing keys?
-    }
-    disable_raw_mode()?;
 }
 
 fn help()
@@ -763,15 +747,15 @@ where
 
 // End example code
 
-// Modified example code from crossterm
-
-fn print_events() -> io::Result<()> {
+async fn input_handler() -> io::Result<()>
+{
+    // Nevermind, I'll just read documentation
+    // Based on example code from crossterm
     execute!(
-         std::io::stdout(),
-         EnableBracketedPaste,
          EnableFocusChange,
          EnableMouseCapture
     )?;
+
     loop {
         // `poll()` waits for an `Event` for a given time period
         if poll(Duration::from_millis(500))? {
@@ -782,19 +766,64 @@ fn print_events() -> io::Result<()> {
                 Event::FocusLost => println!("FocusLost"),
                 Event::Key(event) => println!("{:?}", event),
                 Event::Mouse(event) => println!("{:?}", event),
-                #[cfg(feature = "bracketed-paste")] // What is bracketed paste? IDK
-                Event::Paste(data) => println!("Pasted {:?}", data),
-                Event::Resize(width, height) => println!("New size {}x{}", width, height),
+                Event::Resize(width, height) => println!("New size {}x{}", width, height), // Make display work with resize
             }
         } else {
             // Timeout expired and no `Event` is available
         }
     }
+
     execute!(
-        std::io::stdout(),
-        DisableBracketedPaste,
-        DisableFocusChange,
-        DisableMouseCapture
+         DisableFocusChange,
+         DisableMouseCapture
     )?;
+
     Ok(())
+}
+
+fn connect_key_event_to_function(event : Eventually, global: &mut Globe) // Why &mut? I just need to borrow it
+{
+    // This is for the entire thing
+    if Globe.mode == MODE_MENU
+    {
+        match event
+        {
+            Event::Key(event) =>
+            {
+                match event.code
+                {
+                    KeyCode::Up => global.move_up(),
+                    KeyCode::Down => global.move_down(),
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+    }
+    else if Globe.mode == MODE_SEQUENCER
+    {
+        match event
+        {
+            Event::Key(event) =>
+            {
+                match event.code
+                {
+                    KeyCode::Up => global.cursor.cursor_up(),
+                    KeyCode::Down => global.cursor.cursor_down(),
+                    KeyCode::Left => global.cursor.cursor_left(),
+                    KeyCode::Right => global.cursor.cursor_right(),
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+    }
+    else if Globe.mode == MODE_TRACKER
+    {
+        // Similar to sequencer, but different functions
+    }
+    else if Globe.mode == MODE_SAMPLE_EDIT
+    {
+        // Sample editing functions
+    }
 }
