@@ -1,5 +1,5 @@
 use std::{collections::btree_map::Range, io, process::Stdio, time::Duration, io};
-use std::env;
+use std::env; //You know, we could combine these with the line above
 use std::fs;
 use rand::{rng, Rng, RngCore};
 use cpal::{
@@ -11,11 +11,13 @@ use cpal::{
 use audio;
 use crossterm::{
     event::{
-        read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
-        EnableFocusChange, EnableMouseCapture, Event,
+        self, read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
+        EnableFocusChange, EnableMouseCapture, Event, KeyCode
     },
+    terminal::{disable_raw_mode, enable_raw_mode},
     execute,
 };
+use tokio::time::{sleep, Duration};
 // Allow focus to affect things, or not, I don't know what's better
 
 //In which I try and make a better tracker program than OpenMPT
@@ -289,14 +291,9 @@ fn main() -> io::Result<()> {
     println!("Default output config: {config:?}");
     run::<f32>(&device, &config.into());
     // This code should be moved into a structure to keep main nice.
-
-
-
     // Play (probably very loud) noise
     // Technically just fills buffers with random noise, but I figure that the buffers are being played?
     startup_noises();
-    // Meet requirements for module
-    meet_requirements();
     // Initialize global data structure
     let firmament = Globe::new();
     // Define variables that we will need throughout the program
@@ -348,7 +345,28 @@ fn main() -> io::Result<()> {
         // println!("{}", buffer); // This was here for debugging
         buffer.clear();
     }
-    Ok(()) // This is a weird thing, I don't really understand it. LOOK IT UP.
+    Ok(()) // This is just a return for the operating system saying that we exited successfully (it returns nothing)
+}
+
+async fn input_handler()
+{
+    // Handle input asynchronously
+    // We aren't using interrupts, just polling for input
+    enable_raw_mode()?; // Add error handling later
+    loop {
+        // Wait for input
+        if event::poll(Duration::from_millis(500))? {
+            match read()? {
+                Event::Key(event) => println!("{:?}", event),
+                _ => {}
+            }
+        }
+        // Give time for thread to handle other things
+        sleep(Duration::from_millis(10)).await;
+        // We will not be able to get live input from the keyboard for recording if we do this, have a record mode that polls more often for that.
+        // How fast are you pressing keys?
+    }
+    disable_raw_mode()?;
 }
 
 fn help()
@@ -646,30 +664,6 @@ fn check_input()
 fn get_note_as_string()
 {
     // Return note/octave or hex code
-}
-
-fn meet_requirements()
-{
-    // So I have something to show
-    let mut x: i32 = 0;
-    let y: i32 = 10;
-    let mut direction_and_magnitude: Vec<i32> = Vec::new();
-    while x < y
-    {
-        x += 1;
-        direction_and_magnitude.push(x);
-        useless(x);
-    }
-    for i in direction_and_magnitude
-    {
-        match i % 3
-        {
-            1 => print!("fizz"),
-            2 => print!("buzz"),
-            _ => println!("NEWLINE:")
-        }
-    }
-    println!("REQUIREMENTS MET, ACTUAL PROGRAM START:");
 }
 
 fn useless(variable: i32)
