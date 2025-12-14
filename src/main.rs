@@ -788,12 +788,21 @@ fn connect_key_event_to_function(event : Eventually, global: &mut Globe) // Why 
     {
         match event
         {
-            Event::Key(event) =>
+            Event::Key(event) => // I hate this code, but it allows me to match Key events and Mouse events in the same function
             {
                 match event.code
                 {
                     KeyCode::Up => global.move_up(),
                     KeyCode::Down => global.move_down(),
+                    _ => {}
+                }
+            }
+            Event::Mouse(event) =>
+            {
+                match event.kind
+                {
+                    MouseEventKind::ScrollUp => global.move_up(),
+                    MouseEventKind::ScrollDown => global.move_down(),
                     _ => {}
                 }
             }
@@ -812,6 +821,15 @@ fn connect_key_event_to_function(event : Eventually, global: &mut Globe) // Why 
                     KeyCode::Down => global.cursor.cursor_down(),
                     KeyCode::Left => global.cursor.cursor_left(),
                     KeyCode::Right => global.cursor.cursor_right(),
+                    _ => {}
+                }
+            }
+            event::Mouse(event) =>
+            {
+                match event.kind
+                {
+                    MouseEventKind::ScrollUp => global.move_up(),
+                    MouseEventKind::ScrollDown => global.move_down(),
                     _ => {}
                 }
             }
