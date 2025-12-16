@@ -3,6 +3,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use colored::Colorize;
 
 /// ===============================
 /// Tracker core data structures
@@ -332,7 +333,7 @@ fn format_note_cell(note: &Note) -> String {
 
 /// very simple "highlight": wrap in []
 fn highlight(cell: &str) -> String {
-    format!("[{}]", cell)
+    format!("{}", cell.reversed())
 }
 
 /// ===============================
@@ -368,11 +369,11 @@ fn draw_ui(song: &Song, ui: &UiState, tracker: &Tracker) {
     println!("{} |Pattern: {}", seq_str, ui.current_pattern_index + 1);
     println!("--------------------------------------------------------------------");
 
-    // Track header
-    println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|Sample:");
+    // Track header, also should print as variable later.
+    println!("TRACK1|TRACK2|TRACK3|TRACK4|TRACK5|TRACK6|TRACK7|TRACK8|INFO:");
 
     // Up arrow if scrolled
-    if ui.cursor.row > 0 {
+    if ui.cursor.row_start > 0 {
         println!("^^^^");
     }
 
@@ -384,8 +385,8 @@ fn draw_ui(song: &Song, ui: &UiState, tracker: &Tracker) {
     for row_idx in start..end {
         let row = &pattern.rows[row_idx];
 
-        // 8 tracks
-        for ch in 0..8 {
+        // 8 tracks, update to variable later
+        for ch in 0..9 {
             let base_cell = if ch < row.channels.len() {
                 format_note_cell(&row.channels[ch])
             } else {
@@ -403,7 +404,7 @@ fn draw_ui(song: &Song, ui: &UiState, tracker: &Tracker) {
             }
         }
 
-        // Right panel
+        // Right panel, need to fix this to show row cursor is on since it seems to be wrong.
         let rel = row_idx - start;
         let is_cursor = ui.cursor.region == CursorRegion::SideInfo
             && ui.cursor.row == rel; // rel = 0..VISIBLE_ROWS-1
@@ -447,11 +448,9 @@ fn draw_ui(song: &Song, ui: &UiState, tracker: &Tracker) {
         if ui.is_playing { "Yes" } else { "No" }
     );
 
-    // CMD line
+    // CMD line only shows if we enter command mode
     if ui.show_cmd {
-        println!("CMD: {}", ui.cmd_buffer);
-    } else {
-        println!("CMD:_");
+        print!("CMD: {}", ui.cmd_buffer);
     }
 
     io::stdout().flush().ok();

@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+colored = "3.0.0"
+colorize = "0.1.0"
 cpal = "0.16.0"
 crossterm = "0.29.0"
